@@ -108,9 +108,9 @@ if __name__ == '__main__':
                'city_Томск': [0],
                'city_Хабаровск': [0],
                'city_Ярославль': [0],
-               'vacation_preference_Архитектура': [1],
+               'vacation_preference_Архитектура': [0],
                'vacation_preference_Ночные клубы': [0],
-               'vacation_preference_Пляжный отдых': [0],
+               'vacation_preference_Пляжный отдых': [1],
                'vacation_preference_Шоппинг': [0],
                'transport_preference_Автомобиль': [0],
                'transport_preference_Космический корабль': [0],
@@ -125,8 +125,43 @@ if __name__ == '__main__':
     # model.predict
     # model.predict_proba
 
-    # получаю прогноз для нового человека(датафрейма exemple_df)
+    # получаю прогноз для нового человека(датафрейма example_df)
     print(model.classes_)  # печать классов модели
     print(model.predict_proba(example_df))  # распределение вероятности назначения классов
-    print(f'Куда рекомендовать поехать человеку: {model.predict(example_df)}')
+    print(f'Куда рекомендовать поехать человеку: {model.predict(example_df)}\n')
 
+    # У кого из любителей самолетов больше членов семьи
+    print('Фильтр по любителям Самолетов')
+    print(trips_data.transport_preference == "Самолет")
+    fig = plt.figure()
+    fig.suptitle('Распределение любителей самолета по количеству членов семьи')
+    trips_data[trips_data.transport_preference == "Самолет"].family_members.hist()
+    # или можно так
+    # trips_data[trips_data.transport_preference == "Самолет"].family_members.value_counts().plot(kind='bar')
+    plt.tight_layout()
+    plt.show()
+
+    # Найти самых взрослых людей в каждом городе
+    print("Найти самых взрослых людей в каждом городе")
+    print(trips_data.groupby("city")["age"].max())
+
+    # Средняя зарплата по городам
+    print("Средняя зарплата по городам")
+    print(trips_data.groupby("city")["salary"].mean())
+
+    # Какой диапазон возрастов (20-30, 30-40, 40-50, 50-60, 60-70, 70-80) имеет самую высокую среднюю зарплату
+    # делаем колонку с диапазонами возрастов
+    trips_data["age_band"] = trips_data["age"] // 10
+    print(trips_data.groupby("age_band")["salary"].mean().astype(int))
+    fig = plt.figure()
+    fig.suptitle('Распределение зарплаты под диапазонам возраста')
+    plt.bar(range(1, 9), trips_data.groupby("age_band")["salary"].mean().astype(int))
+    plt.tight_layout()
+    plt.show()
+
+    # Кто предпочитает Архитектуру, люди с высокой зарплатой или с низкой
+    fig = plt.figure()
+    fig.suptitle('Распределение любителей архитектуры по зарплате')
+    trips_data[trips_data.vacation_preference == "Архитектура"].salary.hist()
+    plt.tight_layout()
+    plt.show()
