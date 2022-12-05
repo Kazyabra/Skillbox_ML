@@ -12,6 +12,7 @@ if __name__ == '__main__':
     path = f"{cwd}\\data\\{f_name}"
 
     trips_data = pd.read_excel(path)
+    pd.set_option("display.max.columns", None)  # не скрывать столбцы
     print(trips_data)
 
     # распределение по зарплате
