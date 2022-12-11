@@ -1,6 +1,11 @@
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_absolute_error, max_error
+from sklearn.ensemble import RandomForestRegressor
 
 if __name__ == '__main__':
     cwd = os.path.dirname(os.path.abspath(__file__))  # current work directory
@@ -72,7 +77,7 @@ if __name__ == '__main__':
     # добавляем еще столбцы
     bitcoin["month"] = bitcoin["date"].dt.month
     bitcoin["year"] = bitcoin["date"].dt.year
-    bitcoin["dayofweek"] = bitcoin["date"].dt.dayofweek
+    # bitcoin["dayofweek"] = bitcoin["date"].dt.dayofweek
 
     # изменение датафреймов pandas
     # теперь нужно убрать все нечисловые столбцы, они не нужны модели
@@ -80,6 +85,9 @@ if __name__ == '__main__':
     bitcoin.drop("symbol", axis=1, inplace=True)  # удалить столбец из датафрейма
     bitcoin.drop("date", axis=1, inplace=True)  # удалить столбец из датафрейма
 
+    # в столбце hl_co_abs есть значения с бесконечностью, надо от них избавиться
+    # заменяем их на NaN
+    bitcoin.replace([np.inf, -np.inf], np.nan, inplace=True)
     # избавиться от NaN
     # dropna - удалить все строки с NaN
     # fillna - заполнить все пропуски (вперед/назад)
@@ -100,4 +108,35 @@ if __name__ == '__main__':
     # Train - тренировочная выборка = (x_train, y_train)
     # Test - тестовая выборка = (x_test, y_test)
     # Metric - средняя абсолютная ошибка, максимальная ошибка и др. - оценка качества
+
+    print(x.shape, y.shape)
+    # разделяем данные на тренировочные и тестовые
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.33)
+    print(x_train.shape, x_test.shape, y_train.shape, y_test.shape)
+
+    # обучаем модель Линейной регрессии на тренировочных данных
+    print("Модель LinearRegression")
+    model = LinearRegression()
+    model.fit(x_train, y_train)
+
+    # получаем предсказания
+    y_pred = model.predict(x_test)
+    # Метрика средняя абсолютная ошибка Mean Absolute Error
+    print((y_pred-y_test).abs().mean())
+    print(f"MAE = {mean_absolute_error(y_pred, y_test)}")  # то же самое
+    # Метрика максимальная ошибка
+    print((y_pred-y_test).abs().max())
+    print(f"MaxErr = {max_error(y_pred, y_test)}")  # то же самое
+
+    # Обучаем модель рандомфорест регрессор
+    print("Модель RandomForestRegressor")
+    model = RandomForestRegressor(n_estimators=10, max_depth=10, random_state=42)
+    model.fit(x_train, y_train)
+
+    # получаем предсказания
+    y_pred = model.predict(x_test)
+    # Метрика средняя абсолютная ошибка Mean Absolute Error
+    print(f"MAE = {mean_absolute_error(y_pred, y_test)}")
+    # Метрика максимальная ошибка
+    print(f"MaxErr = {max_error(y_pred, y_test)}")
 
